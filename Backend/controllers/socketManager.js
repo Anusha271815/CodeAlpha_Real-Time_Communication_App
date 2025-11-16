@@ -14,10 +14,10 @@ const connectToSocket=(server)=>{
             credentials:true
         }
     });
-    return io;
     
     
     io.on("connection",(socket)=>{
+        console.log("Something is Connected");
         socket.on('join-call',(path) =>{
             if(connections[path]=== undefined){
                 connections[path]=[];
@@ -74,7 +74,7 @@ const connectToSocket=(server)=>{
                         for(let a=0;a<connections[key].length;++a){
                             io.to(connections[key][a]).emit('user-left',socket.id,diffTime);
                         }
-                        var index=connection[key].indexOf(socket.id);
+                        var index=connections[key].indexOf(socket.id);
                         connections[key].splice(index,1);
 
                         if(connections[key].length===0){

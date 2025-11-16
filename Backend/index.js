@@ -10,6 +10,7 @@ import userRoutes from './router/user_routes.js';
 const app=express();
 const port=8080;
 const server=createServer(app);
+const io=connectToSocket(server);
 
 app.use(cors());
 app.use(express.json({limit:'40kb'}));    
@@ -27,13 +28,12 @@ async function connectDB(){
 }
 connectDB();
 
-const io=connectToSocket(server);
 
 
 app.get('/',(req,res)=>{
     res.send('Hello World!');
 });
 
-app.listen(port,()=>{
+server.listen(port,()=>{
     console.log(`Server is running on http://localhost:${port}`);
 });
