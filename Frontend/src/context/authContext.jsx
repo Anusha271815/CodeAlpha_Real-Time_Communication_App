@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import axios, { HttpStatusCode } from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -11,6 +11,12 @@ const Client = axios.create({
 export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const router = useNavigate();
+
+  // Restore user on page load
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) setUserData(JSON.parse(savedUser));
+  }, []);
 
   const handleRegister = async (name, username, password) => {
     try {
@@ -29,9 +35,10 @@ export const AuthProvider = ({ children }) => {
       const response = await Client.post("/login", { username, password });
 
       if (response.status === HttpStatusCode.Ok) {
-        localStorage.setItem("token", response.data.token);
-        setUserData({ username });
-        router("/dashboard"); // example navigation
+        const user = response.data.user; // <-- full user object from backend
+        localStorage.setItem("user", JSON.stringify(user));
+        setUserData(user); // <-- store full user for Dashboard
+        router("/dashboard");
       }
     } catch (err) {
       console.error(err);
@@ -39,11 +46,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUserData(null);
+    router("/login");
+  };
+
   const value = {
     userData,
     setUserData,
     handleRegister,
-    handleLogin
+    handleLogin,
+    handleLogout
   };
 
   return (

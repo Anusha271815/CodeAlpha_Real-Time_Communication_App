@@ -1,6 +1,6 @@
-import {schema} from 'mongoose'; 
+import mongoose from "mongoose";
 
-const meetingSchema=new Schema(
+const meetingSchema=new mongoose.Schema(
     {
         user_id:{
             type:String,
@@ -17,6 +17,6 @@ const meetingSchema=new Schema(
     }
 )
 
-const Meeting=mongoose.model("<eeting",meetingSchema);
+const Meeting=mongoose.model("Meeting",meetingSchema);
 
 export default Meeting;

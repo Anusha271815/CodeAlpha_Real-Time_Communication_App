@@ -1,0 +1,198 @@
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f0f2f5;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 300px;
+  background-color: #fff;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.sidebar-subtitle {
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.create-room-btn {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.create-room-btn:hover {
+  background-color: #45a049;
+}
+
+.rooms-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.no-rooms {
+  font-style: italic;
+  color: #666;
+}
+
+/* Room Item */
+.room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.room-item:hover {
+  background-color: #e6f0ff;
+}
+
+.room-info {
+  flex: 1;
+}
+
+.room-code {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+}
+
+.room-user {
+  font-size: 12px;
+  color: #555;
+  margin: 2px 0 0 0;
+}
+
+/* Buttons */
+.room-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.room-btn {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: white;
+}
+
+.copy-btn {
+  background-color: #007bff;
+}
+
+.copy-btn:hover {
+  background-color: #006ae6;
+}
+
+.delete-btn {
+  background-color: #ff4d4f;
+}
+
+.delete-btn:hover {
+  background-color: #e63b3b;
+}
+
+/* Video Container */
+.video-container {
+  background-color: #fff;
+  width: 100%;
+}
+
+
+/* Room Item Updated Styling */
+.room-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.room-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background-color: #f0f8ff;
+}
+
+.room-info {
+  flex: 1;
+}
+
+.room-code {
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 5px 0;
+  color: #222;
+}
+
+.room-user {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 5px 0;
+}
+
+.room-date {
+  font-size: 12px;
+  color: #888;
+}
+
+.room-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.room-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #fff;
+  transition: background 0.2s;
+}
+
+.copy-btn {
+  background-color: #007bff;
+}
+
+.copy-btn:hover {
+  background-color: #0056cc;
+}
+
+.delete-btn {
+  background-color: #ff4d4f;
+}
+
+.delete-btn:hover {
+  background-color: #c70000;
+}

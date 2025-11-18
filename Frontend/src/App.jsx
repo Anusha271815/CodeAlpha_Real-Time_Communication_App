@@ -8,6 +8,8 @@ import Landing from './pages/landing.jsx';
 import Authentication from './pages/Authentication.jsx';
 import { AuthProvider } from './context/authContext.jsx';
 import VideoMeet from './pages/videoMeet.jsx';
+import Dashboard from './pages/dashboard.jsx';
+import Guest from './pages/guest.jsx';
 function App() {
 
   return (
@@ -17,10 +19,12 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Authentication />} />
-        <Route path='/:url' element={<VideoMeet/>}/>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path='/meet/:roomId' element={<VideoMeet />} />
+        <Route path="/guest" element={<Guest />} />
       </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    </AuthProvider>
+  </BrowserRouter>
     
     </>
   )

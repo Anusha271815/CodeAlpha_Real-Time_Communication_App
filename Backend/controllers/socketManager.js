@@ -1,91 +1,169 @@
-import { connect } from 'mongoose';
-import {Server} from 'socket.io';
+import { Server } from "socket.io";
 
-let connections={};
-let messages={};
-let timeOnline={};
+let connections = {};   
+let messages = {};      
+let timeOnline = {};    
+let usernames = {};     
 
-const connectToSocket=(server)=>{
-    const io=new Server(server, {
-        cors:{
-            origin:"*",
-            methods:["GET","POST"],  
-            allowedHeaders:["*"],
-            credentials:true
+const connectToSocket = (server) => {
+    const io = new Server(server, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+            allowedHeaders: ["*"],
+            credentials: true
         }
     });
-    
-    
-    io.on("connection",(socket)=>{
-        console.log("Something is Connected");
-        socket.on('join-call',(path) =>{
-            if(connections[path]=== undefined){
-                connections[path]=[];
-            }
+
+    io.on("connection", (socket) => {
+        console.log("User connected:", socket.id);
+
+        // Save username coming from frontend
+        socket.on("set-username", (name) => {
+            usernames[socket.id] = name;
+        });
+
+        // -------------------------------
+        // ✅ NEW: Better room joining logic
+        // -------------------------------
+        socket.on("join-room", (roomId) => {
+            console.log(`Socket ${socket.id} joining room ${roomId}`);
+
+            // Initialize room structures
+            if (!connections[roomId]) connections[roomId] = [];
+            if (!messages[roomId]) messages[roomId] = [];
+
+            // Save connection
+            connections[roomId].push(socket.id);
+            timeOnline[socket.id] = Date.now();
+
+            // Join actual Socket.IO room
+            socket.join(roomId);
+
+            // Prepare username list for this room
+            const roomUsernames = {};
+            connections[roomId].forEach(id => {
+                roomUsernames[id] = usernames[id] || "User";
+            });
+
+            // Send confirmation to the new user
+            socket.emit("joined-room", {
+                yourId: socket.id,
+                clients: [...connections[roomId]],
+                usernames: roomUsernames,
+                messages: messages[roomId]
+            });
+
+            // Notify others in room
+            socket.to(roomId).emit(
+                "user-joined",
+                socket.id,
+                [...connections[roomId]],
+                roomUsernames
+            );
+        });
+
+        // --------------------------------
+        // OLD SYSTEM: For join-call (keep for compatibility)
+        // --------------------------------
+        socket.on("join-call", (path) => {
+            if (!connections[path]) connections[path] = [];
+
             connections[path].push(socket.id);
+            timeOnline[socket.id] = Date.now();
 
-            timeOnline[socket.id]=Date.now();
+            // Username list preparation
+            const nameMap = {};
+            connections[path].forEach(id => {
+                nameMap[id] = usernames[id] || "User";
+            });
 
-            for(let a=0;a<connections[path].length;a++){
-                io.to(connections[path][a]).emit('user-joined',socket.id,connections[path]);
-            }
+            // Notify all users
+            connections[path].forEach((id) => {
+                io.to(id).emit(
+                    "user-joined",
+                    socket.id,
+                    [...connections[path]],
+                    nameMap
+                );
+            });
 
-            if(messages[path]!==undefined){
-                for(let a=0;a<messages[path].length;a++){
-                    io.to(socket.id).emit('chat-message',messages[path][a]["data"],messages[path][a]["sender"],messages[path][a]["socket-id-sender"]);
-            }
-        }
-
-        });
-
-        socket.on('signal',(toId,message)=>{
-            io.to(toId).emit('signal',socket.id,message);
-        });
-
-        socket.on('chat-message',(data,sender)=>{
-            const [matchingRoom,found]=Object.entries(connections).reduce(([room,isFound],[roomKey,roomValue])=>{
-                if(!isFound && roomValue.includes(socket.id)){
-                    return (roomKey,true);
-                }
-                return [room,isFound];
-            },[" ",false]);
-            if(found){
-                if(messages[matchingRoom]===undefined){
-                    messages[matchingRoom]=[];
-                }
-                const newMessage={sender:sender,message:data,time:Date.now()};
-                messages[matchingRoom].push({"sender":sender,"data":data,"socket-id-sender":socket.id});
-                console.log("message",key ,":",sender,data);
-                connections[matchingRoom].forEach((id)=>{
-                    io.to(id).emit('chat-message',data,sender,socket.id);
+            // Sync old messages
+            if (messages[path]) {
+                messages[path].forEach((msg) => {
+                    io.to(socket.id).emit(
+                        "chat-message",
+                        msg.data,
+                        msg.sender,
+                        msg["socket-id-sender"]
+                    );
                 });
             }
         });
 
-        socket.on('disconnect',()=>{
-            var diffTime=Math.abs(timeOnline[socket.id]-  new Date());
+        // Forward WebRTC signals
+        socket.on("signal", (toId, message) => {
+            io.to(toId).emit("signal", socket.id, message);
+        });
 
-            var key
+        // ------------------------
+        // Chat message handling
+        // ------------------------
+        socket.on("chat-message", (data, sender) => {
+            let matchingRoom = null;
 
-            for(const [k,v] of JSON.parse(JSON.stringify(Object.entries(connections)))){
-                for(let a=0;a<v.length;++a){
-                    if(v[a]===socket.id){
-                        key=k;
-                        for(let a=0;a<connections[key].length;++a){
-                            io.to(connections[key][a]).emit('user-left',socket.id,diffTime);
-                        }
-                        var index=connections[key].indexOf(socket.id);
-                        connections[key].splice(index,1);
+            // Find the room the user belongs to
+            for (const [roomKey, users] of Object.entries(connections)) {
+                if (users.includes(socket.id)) {
+                    matchingRoom = roomKey;
+                    break;
+                }
+            }
 
-                        if(connections[key].length===0){
-                            delete connections[key];
-                        }
+            if (!matchingRoom) return;
+
+            // Save in room history
+            messages[matchingRoom].push({
+                sender,
+                data,
+                "socket-id-sender": socket.id
+            });
+
+            // Send to all room users
+            connections[matchingRoom].forEach((id) => {
+                io.to(id).emit("chat-message", data, sender, socket.id);
+            });
+        });
+
+        // ------------------------
+        // Handle disconnect
+        // ------------------------
+        socket.on("disconnect", () => {
+            let roomLeft = null;
+
+            for (const [room, users] of Object.entries(connections)) {
+                if (users.includes(socket.id)) {
+                    roomLeft = room;
+
+                    const diffTime = Math.abs(timeOnline[socket.id] - Date.now());
+
+                    // Notify others
+                    socket.to(room).emit("user-left", socket.id, diffTime);
+
+                    // Remove user
+                    connections[room] = users.filter(id => id !== socket.id);
+
+                    if (connections[room].length === 0) {
+                        delete connections[room];
                     }
                 }
             }
+
+            // Cleanup
+            delete usernames[socket.id];
+            delete timeOnline[socket.id];
         });
+    });
+};
 
-    } );
-
-}
-export {connectToSocket};
+export { connectToSocket };

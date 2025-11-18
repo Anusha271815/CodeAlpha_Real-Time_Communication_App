@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import {connectToSocket} from './controllers/socketManager.js';
 import userRoutes from './router/user_routes.js';
+import meetingRoutes from "./router/meeting_routes.js";
+
 
 
 const app=express();
@@ -16,6 +18,8 @@ app.use(cors());
 app.use(express.json({limit:'40kb'}));    
 app.use(express.urlencoded({extended:true, limit:'40kb'}));
 app.use("/api/v1/users",userRoutes);
+app.use("/api/v1/meetings", meetingRoutes);
+
 
 async function connectDB(){
     try{
