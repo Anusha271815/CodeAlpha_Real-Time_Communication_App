@@ -62,8 +62,8 @@ A **real-time video conferencing application** inspired by Zoom, built as part o
 ![Joining in a room call](images/image-2.png)  
 ![Creating rooms after login and joining it](images/image-4.png)
 
-![Meeting Database Collection](meeting.png)
-![User Database Collection](user.png)
+![Meeting Database Collection](images/meeting.png)
+![User Database Collection](images/user.png)
 ---
 
 ## 📝 Future Improvements
